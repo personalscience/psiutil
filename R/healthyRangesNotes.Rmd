@@ -1,0 +1,32 @@
+---
+title: "Studying healthy ranges"
+output: html_notebook
+---
+
+Ken Lassesen generated a table of healthy ranges based on the 100+ samples people sent to his [cfsremission.com](https://cfsremission.com) site.
+
+
+I'll set up the environment and then read data to generate two data frames: `healthy.kl` (with Ken's data) and `healthy.ps` with PSI data:
+
+```{r}
+library(tidyverse)
+
+healthy.kl <- readxl::read_excel("../LassesenHealthyRanges.xlsx", na="NULL",col_types = c(rep("text",2),rep("numeric",10),rep("text",4),rep("numeric",4)))
+head(healthy.kl)
+
+healthy.ps <- readr::read_csv("../healthy_ranges.csv")
+
+head(healthy.ps)
+```
+
+Hmm, looks like the max/min values are identical for many of the taxa.
+
+Let's look at all the microbes in the `ps` list and see how they compare to the same one in the `kl` list.
+
+```{r}
+
+setdiff(healthy.kl$taxa, healthy.ps$taxa)  # note that the two lists include all the same taxa
+
+healthy.kl %>% dplyr::select(taxa,maxcnt,mincnt,taxon,LowEstimate) %>% inner_join(select(healthy.ps,taxa,max,min), by = c("taxa","mincnt" = "min","maxcnt" ="max")) %>% knitr::kable(digits=2)
+```
+
