@@ -5,6 +5,8 @@ output: html_notebook
 
 Ken Lassesen generated a table of healthy ranges based on the 100+ samples people sent to his [cfsremission.com](https://cfsremission.com) site.
 
+His healthy ranges calculations are based only on my data plus his reverse-engineered estimates of uBiome ranges. He used my skew calculation to guess at whether his ranges should be skewed more to the left or the right.
+
 
 I'll set up the environment and then read data to generate two data frames: `healthy.kl` (with Ken's data) and `healthy.ps` with PSI data:
 
@@ -28,5 +30,37 @@ Let's look at all the microbes in the `ps` list and see how they compare to the 
 setdiff(healthy.kl$taxa, healthy.ps$taxa)  # note that the two lists include all the same taxa
 
 healthy.kl %>% dplyr::select(taxa,maxcnt,mincnt,taxon,LowEstimate) %>% inner_join(select(healthy.ps,taxa,max,min), by = c("taxa","mincnt" = "min","maxcnt" ="max")) %>% knitr::kable(digits=2)
+```
+
+
+Here's how I calculate my own healthy ranges
+
+```{r}
+#write.csv(na.omit(mhg_range_for(subset_samples(people.norm,Site=="gut" & Condition == "Healthy"))),file="healthy_ranges.csv")
+
+# returns a df with min and max values for all taxa in ps
+# mhg_range_for <- function(ps) {
+#   mx <- apply(otu_table(ps), 1, max)
+#   mn <- apply(otu_table(ps), 1, min)
+#   md <- apply(otu_table(ps), 1, median)
+#   sd <- apply(otu_table(ps),1, sd)
+#  # sk <- apply(otu_table(ps), 1, psych::skew)
+#   av <- apply(otu_table(ps), 1, mean)
+#   df <- data.frame(taxa = rownames(otu_table(ps)),max = mx, min = mn, median = md, mean = av, sd = sd)
+#   df
+#   
+# }
+
+# h <- mhg_range_for(subset_samples(people.norm,Site=="gut" & Condition == "Healthy"))
+# 
+# ggplot(data = h %>% arrange(desc(mean)) %>% top_n(20), aes(x=reorder(taxa,-max),y=mean)) + 
+#   #geom_boxplot() +
+#   geom_linerange( aes(ymin = min, ymax = max)) + 
+#   geom_point(aes(y=median), color = "red") + 
+#   geom_point(aes(y=mean), color = "blue") + 
+#     theme(axis.text.x = element_text(size = 15, angle=90))  + 
+#     scale_y_log10(labels=function(x)x/10000) +
+#   labs(title="Healthy People", x="Top 20 Taxa", y = "Abundance (log10 %)")
+
 ```
 
